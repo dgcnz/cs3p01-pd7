@@ -105,7 +105,7 @@ int main(int argc, char **argv)
             a.push_back((float)rand() / (float)RAND_MAX);
 
     double t1 = MPI_Wtime();
-    bucket_sort(a, world_size * sqrt(n));
+    bucket_sort(a, world_size * (int)sqrt(n));
     double t2 = MPI_Wtime();
 
     if (world_rank == 0)
