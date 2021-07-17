@@ -8,9 +8,8 @@
 
 using namespace std;
 
-const int N = 256;
-// const int N = 524288; // 2^19
-int p = 1;
+const int N = 524288; // 2^19
+int p;
 vector<int> arr, arr2;
 
 void printArray()
@@ -29,7 +28,6 @@ void merge(int start, int n)
     int step = n / 2;
     while (step > 0)
     {
-#pragma omp parallel for
         for (int i = 0; i < n; i += step * 2)
         {
             for (int j = start + i; j < min(N - step, start + i + step); ++j)
@@ -63,6 +61,7 @@ void measure()
     // do merges
     for (int s = 2; s <= N; s *= 2)
     {
+        #pragma omp parallel for num_threads(p)
         for (int i = 0; i < N; i += s * 2)
         {
             merge_up(i, s);
@@ -88,7 +87,7 @@ int main(int argc, char **argv)
 
     for (int &i : vector<int>{1, 2, 4, 8, 16}) // {1, 2, 4, 8, 16}
     {
-        omp_set_num_threads(p);
+        p = i;
         arr = arr2;
         measure();
     }
