@@ -8,7 +8,8 @@
 
 using namespace std;
 
-const int N = 524288; // 2^19
+const int N = 256;
+// const int N = 524288; // 2^19
 int p = 1;
 vector<int> arr, arr2;
 
@@ -85,7 +86,7 @@ int main(int argc, char **argv)
         arr[i] = arr2[i] = dist(rd);
     }
 
-    for (int &i : vector<int>{1, 2, 4}) // {1, 2, 4, 8, 16}
+    for (int &i : vector<int>{1, 2, 4, 8, 16}) // {1, 2, 4, 8, 16}
     {
         p = i;
         arr = arr2;
