@@ -85,7 +85,7 @@ int main(int argc, char **argv)
         arr[i] = arr2[i] = dist(rd);
     }
 
-    for (int &i : vector<int>{1, 2, 4, 8, 16}) // {1, 2, 4, 8, 16}
+    for (int &i : vector<int>{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}) // {1, 2, 4, 8, 16}
     {
         p = i;
         arr = arr2;

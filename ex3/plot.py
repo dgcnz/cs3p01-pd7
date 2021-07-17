@@ -1,17 +1,16 @@
 import matplotlib.pyplot as plt
 
-labels = []
 data = []
 
 while True:
 	try:
-		x = input()
 		y = float(input())
 	except EOFError:
 		break
 	else:
-		labels.append(x)
 		data.append(y)
+
+labels = [str(2 ** i) for i in range(len(data))]
 
 fig = plt.figure(figsize=(10, 8))
 plt.plot(labels, data)
