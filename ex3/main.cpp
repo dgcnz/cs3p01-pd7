@@ -9,7 +9,7 @@
 using namespace std;
 
 const int N = 524288; // 2^19
-const int TESTS = 100;
+int p = 1;
 vector<int> arr, arr2;
 
 void printArray()
@@ -28,9 +28,9 @@ void merge(int start, int n)
     int step = n / 2;
     while (step > 0)
     {
+#pragma omp parallel for num_threads(p)
         for (int i = 0; i < n; i += step * 2)
         {
-#pragma omp parallel for
             for (int j = start + i; j < min(N - step, start + i + step); ++j)
             {
                 if (comp(arr[j], arr[j + step]))
@@ -53,36 +53,25 @@ void merge_down(int start, int n)
     merge<less<int>>(start, n);
 }
 
-void measure(int p)
+void measure()
 {
-    double start, end, avg;
+    double start, end;
 
-    omp_set_num_threads(p);
+    start = omp_get_wtime();
 
-    for (int i = 0; i < TESTS; ++i)
+    // do merges
+    for (int s = 2; s <= N; s *= 2)
     {
-        arr = arr2;
-        start = omp_get_wtime();
-
-        // do merges
-        for (int s = 2; s <= N; s *= 2)
+        for (int i = 0; i < N; i += s * 2)
         {
-            for (int i = 0; i < N; i += s * 2)
-            {
-                merge_up(i, s);
-                merge_down(i + s, s);
-            }
+            merge_up(i, s);
+            merge_down(i + s, s);
         }
-
-        end = omp_get_wtime();
-
-        avg += (end - start);
     }
 
-    avg /= TESTS;
-    avg *= 1000.0; // milliseconds
+    end = omp_get_wtime();
 
-    printf("%f\n", avg);
+    printf("%f\n", (end - start) * 1000.0);
 }
 
 int main(int argc, char **argv)
@@ -96,8 +85,10 @@ int main(int argc, char **argv)
         arr[i] = arr2[i] = dist(rd);
     }
 
-    for (int &p : vector<int>{1, 2}) // {1, 2, 4, 8, 16}
+    for (int &i : vector<int>{1, 2, 4}) // {1, 2, 4, 8, 16}
     {
-        measure(p);
+        p = i;
+        arr = arr2;
+        measure();
     }
 }
