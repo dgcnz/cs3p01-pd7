@@ -29,7 +29,7 @@ void merge(int start, int n)
     int step = n / 2;
     while (step > 0)
     {
-#pragma omp parallel for num_threads(p)
+#pragma omp parallel for
         for (int i = 0; i < n; i += step * 2)
         {
             for (int j = start + i; j < min(N - step, start + i + step); ++j)
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
     for (int &i : vector<int>{1, 2, 4, 8, 16}) // {1, 2, 4, 8, 16}
     {
-        p = i;
+        omp_set_num_threads(p);
         arr = arr2;
         measure();
     }
