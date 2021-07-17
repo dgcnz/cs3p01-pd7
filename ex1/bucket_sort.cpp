@@ -8,8 +8,9 @@
 
 using namespace std;
 
-void bucket_sort(vector<float> &a, int m)
+double bucket_sort(vector<float> &a, int m)
 {
+    double comm_time = 0.0;
 
     int world_size, world_rank;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -23,6 +24,7 @@ void bucket_sort(vector<float> &a, int m)
     int bix_end   = (world_rank + 1) * mp;
     if (world_rank == 0)
     {
+        double t0 = MPI_Wtime();
         for (auto ai : a)
         {
             assert(0 <= ai and ai < 1);
@@ -36,6 +38,8 @@ void bucket_sort(vector<float> &a, int m)
         float x = -1;
         for (int p = 1; p < world_size; ++p)
             MPI_Send(&x, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD);
+        double t1 = MPI_Wtime();
+        comm_time += t1 - t0;
     }
     else
     {
@@ -66,12 +70,13 @@ void bucket_sort(vector<float> &a, int m)
         for (int i = 0; i < len; ++i)
             a[i] = local_a[i];
 
+        double t0 = MPI_Wtime();
         for (int p = 1; p < world_size; ++p)
         {
             int plen;
+
             MPI_Recv(
                 &plen, 1, MPI_INT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
             MPI_Recv(a.data() + len,
                      plen,
                      MPI_FLOAT,
@@ -81,13 +86,17 @@ void bucket_sort(vector<float> &a, int m)
                      MPI_STATUS_IGNORE);
             len += plen;
         }
+        double t1 = MPI_Wtime();
+        comm_time += t1 - t0;
     }
     else
     {
         int len = local_a.size();
+
         MPI_Send(&len, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         MPI_Send(local_a.data(), len, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
     }
+    return comm_time;
 }
 
 int main(int argc, char **argv)
@@ -102,15 +111,19 @@ int main(int argc, char **argv)
     vector<float> a;
     if (world_rank == 0)
         for (int i = 0; i < n; ++i)
-            a.push_back((float)rand() / (float)RAND_MAX);
+            a.push_back(rand() / (RAND_MAX + 1.0));
 
-    double t1 = MPI_Wtime();
-    bucket_sort(a, world_size * (int)sqrt(n));
-    double t2 = MPI_Wtime();
+    double t1        = MPI_Wtime();
+    double comm_time = bucket_sort(a, world_size * (int)sqrt(n));
+    double t2        = MPI_Wtime();
+    double comp_time = (t2 - t1) - comm_time;
+    assert(comp_time >= 0.0);
 
     if (world_rank == 0)
     {
         printf("TIME: %f\n", t2 - t1);
+        printf("COMP: %f\n", comp_time);
+        printf("COMM: %f\n", comm_time);
     }
 
     MPI_Finalize();
