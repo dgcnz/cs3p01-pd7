@@ -1,16 +1,22 @@
 import matplotlib.pyplot as plt
 
+labels = []
 data = []
 
 while True:
 	try:
-		a = float(input())
+		x = input()
+		y = float(input())
 	except EOFError:
 		break
 	else:
-		data.append(a)
+		labels.append(x)
+		data.append(y)
 
 fig = plt.figure(figsize=(10, 8))
-plt.plot(data)
-plt.savefig("sample.png")
+plt.plot(labels, data)
+plt.title("Number of threads vs. execution time")
+plt.ylabel("Execution time (ms)")
+plt.xlabel("Number of threads")
+plt.savefig("time_vs_p.png")
 plt.close(fig)
